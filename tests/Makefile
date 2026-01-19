@@ -1,16 +1,21 @@
 CC ?= cc
 CFLAGS ?= -std=c11 -O2 -Wall -Wextra -Wpedantic
 
-TARGET = fe_tests
-SRC = test_fe.c
+TARGETS = fe_tests point_tests
+SRC_FE = test_fe.c
+SRC_POINT = test_point.c
 
-all: $(TARGET)
+all: $(TARGETS)
 
-$(TARGET): $(SRC) ../fe.h
-	$(CC) $(CFLAGS) -I.. $(SRC) -o $(TARGET)
+fe_tests: $(SRC_FE) ../fe.h
+	$(CC) $(CFLAGS) -I.. $(SRC_FE) -o fe_tests
+
+point_tests: $(SRC_POINT) ../fe.h ../point.h
+	$(CC) $(CFLAGS) -I.. $(SRC_POINT) -o point_tests
 
 run: all
-	./$(TARGET)
+	./fe_tests
+	./point_tests
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGETS)

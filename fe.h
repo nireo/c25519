@@ -105,6 +105,8 @@ static inline uint64_t fe_shift_right_51(fe_uint128 a)
     return (a.hi << (64 - 51)) | (a.lo >> 51);
 }
 
+// fe_carry_propagate handles basic addition by carrying over the part that is over 51-bits
+// into the next limb.
 static inline fe* fe_carry_propagate(fe* v)
 {
     uint64_t l0 = v->l0;
@@ -116,7 +118,10 @@ static inline fe* fe_carry_propagate(fe* v)
     return v;
 }
 
-static inline fe* reduce(fe* v)
+// fe_reduce it ensures that a number is fully contained within the field. Since 2^255 is
+// congruent 19 (mod 2^255 - 19). any values that wraps around the top is multiplied by 19
+// and added back to the bottom.
+static inline fe* fe_reduce(fe* v)
 {
     uint64_t c;
     fe_carry_propagate(v);
@@ -155,6 +160,7 @@ static inline fe* fe_add(fe* v, const fe* a, const fe* b)
     v->l2 = a->l2 + b->l2;
     v->l3 = a->l3 + b->l3;
     v->l4 = a->l4 + b->l4;
+
     return fe_carry_propagate(v);
 }
 
@@ -165,6 +171,7 @@ static inline fe* fe_sub(fe* v, const fe* a, const fe* b)
     v->l2 = (a->l2 + UINT64_C(0xFFFFFFFFFFFFE)) - b->l2;
     v->l3 = (a->l3 + UINT64_C(0xFFFFFFFFFFFFE)) - b->l3;
     v->l4 = (a->l4 + UINT64_C(0xFFFFFFFFFFFFE)) - b->l4;
+
     return fe_carry_propagate(v);
 }
 
@@ -173,7 +180,7 @@ static inline fe* fe_neg(fe* v, const fe* a)
     return fe_sub(v, &FE_ZERO, a);
 }
 
-static inline void fe_mul_generic(fe* v, const fe* a, const fe* b)
+static inline void fe_mul_port(fe* v, const fe* a, const fe* b)
 {
     uint64_t a0 = a->l0, a1 = a->l1, a2 = a->l2, a3 = a->l3, a4 = a->l4;
     uint64_t b0 = b->l0, b1 = b->l1, b2 = b->l2, b3 = b->l3, b4 = b->l4;
@@ -229,11 +236,11 @@ static inline void fe_mul_generic(fe* v, const fe* a, const fe* b)
 
 static inline fe* fe_mul(fe* v, const fe* x, const fe* y)
 {
-    fe_mul_generic(v, x, y);
+    fe_mul_port(v, x, y);
     return v;
 }
 
-static inline void fe_square_generic(fe* v, const fe* a)
+static inline void fe_square_port(fe* v, const fe* a)
 {
     uint64_t l0 = a->l0, l1 = a->l1, l2 = a->l2, l3 = a->l3, l4 = a->l4;
 
@@ -278,7 +285,7 @@ static inline void fe_square_generic(fe* v, const fe* a)
 
 static inline fe* fe_square(fe* v, const fe* x)
 {
-    fe_square_generic(v, x);
+    fe_square_port(v, x);
     return v;
 }
 
@@ -325,7 +332,7 @@ static inline int fe_set_bytes(fe* v, const uint8_t* x, size_t len)
 static inline uint8_t* fe_bytes(uint8_t out[32], const fe* v)
 {
     fe t = *v;
-    reduce(&t);
+    fe_reduce(&t);
 
     uint64_t u0 = (t.l1 << 51) | t.l0;
     uint64_t u1 = (t.l2 << 38) | (t.l1 >> 13);

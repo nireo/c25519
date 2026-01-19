@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -36,7 +36,10 @@ static fe random_fe(void)
 }
 
 static const uint64_t weird_limbs51[] = {
-    0, 0, 0, 0,
+    0,
+    0,
+    0,
+    0,
     1,
     19 - 1,
     19,
@@ -44,12 +47,19 @@ static const uint64_t weird_limbs51[] = {
     0x5555555555555ULL,
     ((uint64_t)1 << 51) - 20,
     ((uint64_t)1 << 51) - 19,
-    ((uint64_t)1 << 51) - 1, ((uint64_t)1 << 51) - 1,
-    ((uint64_t)1 << 51) - 1, ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
 };
 
 static const uint64_t weird_limbs52[] = {
-    0, 0, 0, 0, 0, 0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
     1,
     19 - 1,
     19,
@@ -57,9 +67,12 @@ static const uint64_t weird_limbs52[] = {
     0x5555555555555ULL,
     ((uint64_t)1 << 51) - 20,
     ((uint64_t)1 << 51) - 19,
-    ((uint64_t)1 << 51) - 1, ((uint64_t)1 << 51) - 1,
-    ((uint64_t)1 << 51) - 1, ((uint64_t)1 << 51) - 1,
-    ((uint64_t)1 << 51) - 1, ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
+    ((uint64_t)1 << 51) - 1,
     (uint64_t)1 << 51,
     ((uint64_t)1 << 51) + 1,
     ((uint64_t)1 << 52) - 19,
@@ -100,11 +113,7 @@ static int bits_len64(uint64_t x)
 
 static int is_in_bounds(const fe* x)
 {
-    return bits_len64(x->l0) <= 52 &&
-           bits_len64(x->l1) <= 52 &&
-           bits_len64(x->l2) <= 52 &&
-           bits_len64(x->l3) <= 52 &&
-           bits_len64(x->l4) <= 52;
+    return bits_len64(x->l0) <= 52 && bits_len64(x->l1) <= 52 && bits_len64(x->l2) <= 52 && bits_len64(x->l3) <= 52 && bits_len64(x->l4) <= 52;
 }
 
 static int decode_hex(const char* s, uint8_t* out, size_t out_len)
@@ -116,12 +125,10 @@ static int decode_hex(const char* s, uint8_t* out, size_t out_len)
     for (size_t i = 0; i < out_len; i++) {
         char c0 = s[i * 2];
         char c1 = s[i * 2 + 1];
-        uint8_t v0 = (uint8_t)(c0 >= '0' && c0 <= '9' ? c0 - '0' :
-                               c0 >= 'a' && c0 <= 'f' ? c0 - 'a' + 10 :
-                               c0 - 'A' + 10);
-        uint8_t v1 = (uint8_t)(c1 >= '0' && c1 <= '9' ? c1 - '0' :
-                               c1 >= 'a' && c1 <= 'f' ? c1 - 'a' + 10 :
-                               c1 - 'A' + 10);
+        uint8_t v0 = (uint8_t)(c0 >= '0' && c0 <= '9' ? c0 - '0' : c0 >= 'a' && c0 <= 'f' ? c0 - 'a' + 10
+                                                                                          : c0 - 'A' + 10);
+        uint8_t v1 = (uint8_t)(c1 >= '0' && c1 <= '9' ? c1 - '0' : c1 >= 'a' && c1 <= 'f' ? c1 - 'a' + 10
+                                                                                          : c1 - 'A' + 10);
         out[i] = (uint8_t)((v0 << 4) | v1);
     }
     return 0;
@@ -132,7 +139,7 @@ static int test_mul64_to_128(void)
     fe_uint128 r = fe_mul_u64(5, 5);
     if (r.lo != 0x19 || r.hi != 0) {
         fprintf(stderr, "mul_u64 lo-range failed: %llu + %llu*(2^64)\n",
-                (unsigned long long)r.lo, (unsigned long long)r.hi);
+            (unsigned long long)r.lo, (unsigned long long)r.hi);
         return 0;
     }
 
@@ -141,7 +148,7 @@ static int test_mul64_to_128(void)
     r = fe_mul_u64(a, b);
     if (r.lo != 0xff80000000000001ULL || r.hi != 0xfffffffffffULL) {
         fprintf(stderr, "mul_u64 hi-range failed: %llu + %llu*(2^64)\n",
-                (unsigned long long)r.lo, (unsigned long long)r.hi);
+            (unsigned long long)r.lo, (unsigned long long)r.hi);
         return 0;
     }
 
@@ -154,7 +161,7 @@ static int test_mul64_to_128(void)
     r = fe_add_mul(r, a, b);
     if (r.lo != 16888498990613035ULL || r.hi != 640ULL) {
         fprintf(stderr, "add_mul wrong answer: %llu + %llu*(2^64)\n",
-                (unsigned long long)r.lo, (unsigned long long)r.hi);
+            (unsigned long long)r.lo, (unsigned long long)r.hi);
         return 0;
     }
     return 1;
@@ -208,8 +215,8 @@ static int test_multiply_distributes_over_add(void)
 
 static int test_equal(void)
 {
-    fe x = {1, 1, 1, 1, 1};
-    fe y = {5, 4, 3, 2, 1};
+    fe x = { 1, 1, 1, 1, 1 };
+    fe y = { 5, 4, 3, 2, 1 };
     if (fe_equal(&x, &x) != 1) {
         fprintf(stderr, "equality failed\n");
         return 0;
@@ -223,13 +230,13 @@ static int test_equal(void)
 
 static int test_invert(void)
 {
-    fe x = {1, 1, 1, 1, 1};
+    fe x = { 1, 1, 1, 1, 1 };
     fe one = FE_ONE;
     fe xinv, r;
 
     fe_invert(&xinv, &x);
     fe_mul(&r, &x, &xinv);
-    reduce(&r);
+    fe_reduce(&r);
 
     if (fe_equal(&r, &one) != 1) {
         fprintf(stderr, "inversion identity failed\n");
@@ -244,7 +251,7 @@ static int test_invert(void)
 
     fe_invert(&xinv, &x);
     fe_mul(&r, &x, &xinv);
-    reduce(&r);
+    fe_reduce(&r);
 
     if (fe_equal(&r, &one) != 1) {
         fprintf(stderr, "random inversion identity failed\n");
@@ -263,10 +270,10 @@ static int test_invert(void)
 
 static int test_select_swap(void)
 {
-    fe a = {358744748052810ULL, 1691584618240980ULL, 977650209285361ULL,
-            1429865912637724ULL, 560044844278676ULL};
-    fe b = {84926274344903ULL, 473620666599931ULL, 365590438845504ULL,
-            1028470286882429ULL, 2146499180330972ULL};
+    fe a = { 358744748052810ULL, 1691584618240980ULL, 977650209285361ULL,
+        1429865912637724ULL, 560044844278676ULL };
+    fe b = { 84926274344903ULL, 473620666599931ULL, 365590438845504ULL,
+        1028470286882429ULL, 2146499180330972ULL };
 
     fe c, d;
     fe_select(&c, &a, &b, 1);
@@ -361,9 +368,7 @@ static int test_sqrt_ratio(void)
         uint8_t ub[32];
         uint8_t vb[32];
         uint8_t rb[32];
-        if (decode_hex(tests[i].u, ub, sizeof(ub)) != 0 ||
-            decode_hex(tests[i].v, vb, sizeof(vb)) != 0 ||
-            decode_hex(tests[i].r, rb, sizeof(rb)) != 0) {
+        if (decode_hex(tests[i].u, ub, sizeof(ub)) != 0 || decode_hex(tests[i].v, vb, sizeof(vb)) != 0 || decode_hex(tests[i].r, rb, sizeof(rb)) != 0) {
             fprintf(stderr, "hex decode failed\n");
             return 0;
         }
@@ -391,17 +396,17 @@ static int test_square_mul_consistency(void)
         if (fe_equal(&t1, &t2) != 1 || !is_in_bounds(&t1) || !is_in_bounds(&t2)) {
             fprintf(stderr, "square/mul mismatch\n");
             fprintf(stderr, "a:  %llu %llu %llu %llu %llu\n",
-                    (unsigned long long)a.l0, (unsigned long long)a.l1,
-                    (unsigned long long)a.l2, (unsigned long long)a.l3,
-                    (unsigned long long)a.l4);
+                (unsigned long long)a.l0, (unsigned long long)a.l1,
+                (unsigned long long)a.l2, (unsigned long long)a.l3,
+                (unsigned long long)a.l4);
             fprintf(stderr, "sq: %llu %llu %llu %llu %llu\n",
-                    (unsigned long long)t1.l0, (unsigned long long)t1.l1,
-                    (unsigned long long)t1.l2, (unsigned long long)t1.l3,
-                    (unsigned long long)t1.l4);
+                (unsigned long long)t1.l0, (unsigned long long)t1.l1,
+                (unsigned long long)t1.l2, (unsigned long long)t1.l3,
+                (unsigned long long)t1.l4);
             fprintf(stderr, "ml: %llu %llu %llu %llu %llu\n",
-                    (unsigned long long)t2.l0, (unsigned long long)t2.l1,
-                    (unsigned long long)t2.l2, (unsigned long long)t2.l3,
-                    (unsigned long long)t2.l4);
+                (unsigned long long)t2.l0, (unsigned long long)t2.l1,
+                (unsigned long long)t2.l2, (unsigned long long)t2.l3,
+                (unsigned long long)t2.l4);
             return 0;
         }
     }
@@ -414,15 +419,15 @@ int main(void)
         const char* name;
         int (*fn)(void);
     } tests[] = {
-        {"mul64_to_128", test_mul64_to_128},
-        {"set_bytes_roundtrip", test_set_bytes_roundtrip},
-        {"multiply_distributes_over_add", test_multiply_distributes_over_add},
-        {"equal", test_equal},
-        {"invert", test_invert},
-        {"select_swap", test_select_swap},
-        {"mult32", test_mult32},
-        {"sqrt_ratio", test_sqrt_ratio},
-        {"square_mul_consistency", test_square_mul_consistency},
+        { "mul64_to_128", test_mul64_to_128 },
+        { "set_bytes_roundtrip", test_set_bytes_roundtrip },
+        { "multiply_distributes_over_add", test_multiply_distributes_over_add },
+        { "equal", test_equal },
+        { "invert", test_invert },
+        { "select_swap", test_select_swap },
+        { "mult32", test_mult32 },
+        { "sqrt_ratio", test_sqrt_ratio },
+        { "square_mul_consistency", test_square_mul_consistency },
     };
 
     int failures = 0;
