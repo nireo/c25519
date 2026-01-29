@@ -6,38 +6,38 @@
 
 #include "fe.h"
 
-typedef struct projP1xP1 {
+typedef struct proj_p1xp1 {
     fe X;
     fe Y;
     fe Z;
     fe T;
-} projP1xP1;
+} proj_p1xp1;
 
-typedef struct projP2 {
+typedef struct proj_p2 {
     fe X;
     fe Y;
     fe Z;
-} projP2;
+} proj_p2;
 
-typedef struct Point {
+typedef struct point {
     fe x;
     fe y;
     fe z;
     fe t;
-} Point;
+} point;
 
-typedef struct projCached {
+typedef struct proj_cached {
     fe YplusX;
     fe YminusX;
     fe Z;
     fe T2d;
-} projCached;
+} proj_cached;
 
-typedef struct affineCached {
+typedef struct affine_cached {
     fe YplusX;
     fe YminusX;
     fe T2d;
-} affineCached;
+} affine_cached;
 
 static const fe d = {
     929955233495203ULL,
@@ -55,7 +55,7 @@ static const fe d2 = {
     633789495995903ULL,
 };
 
-static inline projP2* projP2_zero(projP2* v)
+static inline proj_p2* proj_p2_zero(proj_p2* v)
 {
     fe_zero(&v->X);
     fe_one(&v->Y);
@@ -63,7 +63,7 @@ static inline projP2* projP2_zero(projP2* v)
     return v;
 }
 
-static inline projCached* projCached_zero(projCached* v)
+static inline proj_cached* proj_cached_zero(proj_cached* v)
 {
     fe_one(&v->YplusX);
     fe_one(&v->YminusX);
@@ -72,7 +72,7 @@ static inline projCached* projCached_zero(projCached* v)
     return v;
 }
 
-static inline affineCached* affineCached_zero(affineCached* v)
+static inline affine_cached* affine_cached_zero(affine_cached* v)
 {
     fe_one(&v->YplusX);
     fe_one(&v->YminusX);
@@ -80,13 +80,13 @@ static inline affineCached* affineCached_zero(affineCached* v)
     return v;
 }
 
-static inline Point* point_set(Point* v, const Point* u)
+static inline point* point_set(point* v, const point* u)
 {
     *v = *u;
     return v;
 }
 
-static inline Point* point_set_identity(Point* v)
+static inline point* point_set_identity(point* v)
 {
     fe_zero(&v->x);
     fe_one(&v->y);
@@ -95,9 +95,9 @@ static inline Point* point_set_identity(Point* v)
     return v;
 }
 
-static inline int point_set_bytes(Point* v, const uint8_t* x, size_t len);
+static inline int point_set_bytes(point* v, const uint8_t* x, size_t len);
 
-static inline Point* point_set_generator(Point* v)
+static inline point* point_set_generator(point* v)
 {
     static const uint8_t gen[32] = {
         0x58, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
@@ -105,7 +105,7 @@ static inline Point* point_set_generator(Point* v)
         0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66,
         0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66
     };
-    Point tmp;
+    point tmp;
     if (point_set_bytes(&tmp, gen, sizeof(gen)) != 0) {
         return NULL;
     }
@@ -113,21 +113,21 @@ static inline Point* point_set_generator(Point* v)
     return v;
 }
 
-static inline Point point_new_identity(void)
+static inline point point_new_identity(void)
 {
-    Point p;
+    point p;
     point_set_identity(&p);
     return p;
 }
 
-static inline Point point_new_generator(void)
+static inline point point_new_generator(void)
 {
-    Point p;
+    point p;
     point_set_generator(&p);
     return p;
 }
 
-static inline uint8_t* point_bytes(uint8_t out[32], const Point* v)
+static inline uint8_t* point_bytes(uint8_t out[32], const point* v)
 {
     fe z_inv;
     fe x;
@@ -140,7 +140,7 @@ static inline uint8_t* point_bytes(uint8_t out[32], const Point* v)
     return out;
 }
 
-static inline int point_set_bytes(Point* v, const uint8_t* x, size_t len)
+static inline int point_set_bytes(point* v, const uint8_t* x, size_t len)
 {
     if (len != 32) {
         return -1;
@@ -170,7 +170,7 @@ static inline int point_set_bytes(Point* v, const uint8_t* x, size_t len)
     fe_neg(&xx_neg, &xx);
     fe_select(&xx, &xx_neg, &xx, (int)((x[31] >> 7) & 1U));
 
-    Point tmp;
+    point tmp;
     fe_set(&tmp.x, &xx);
     fe_set(&tmp.y, &y);
     fe_one(&tmp.z);
@@ -180,7 +180,7 @@ static inline int point_set_bytes(Point* v, const uint8_t* x, size_t len)
     return 0;
 }
 
-static inline projP2* projP2_from_p1x1(projP2* v, const projP1xP1* p)
+static inline proj_p2* proj_p2_from_p1x1(proj_p2* v, const proj_p1xp1* p)
 {
     fe_mul(&v->X, &p->X, &p->T);
     fe_mul(&v->Y, &p->Y, &p->Z);
@@ -188,7 +188,7 @@ static inline projP2* projP2_from_p1x1(projP2* v, const projP1xP1* p)
     return v;
 }
 
-static inline projP2* projP2_from_p3(projP2* v, const Point* p)
+static inline proj_p2* proj_p2_from_p3(proj_p2* v, const point* p)
 {
     fe_set(&v->X, &p->x);
     fe_set(&v->Y, &p->y);
@@ -196,7 +196,7 @@ static inline projP2* projP2_from_p3(projP2* v, const Point* p)
     return v;
 }
 
-static inline Point* point_from_p1x1(Point* v, const projP1xP1* p)
+static inline point* point_from_p1x1(point* v, const proj_p1xp1* p)
 {
     fe_mul(&v->x, &p->X, &p->T);
     fe_mul(&v->y, &p->Y, &p->Z);
@@ -205,7 +205,7 @@ static inline Point* point_from_p1x1(Point* v, const projP1xP1* p)
     return v;
 }
 
-static inline Point* point_from_p2(Point* v, const projP2* p)
+static inline point* point_from_p2(point* v, const proj_p2* p)
 {
     fe_mul(&v->x, &p->X, &p->Z);
     fe_mul(&v->y, &p->Y, &p->Z);
@@ -214,7 +214,7 @@ static inline Point* point_from_p2(Point* v, const projP2* p)
     return v;
 }
 
-static inline projCached* projCached_from_p3(projCached* v, const Point* p)
+static inline proj_cached* proj_cached_from_p3(proj_cached* v, const point* p)
 {
     fe_add(&v->YplusX, &p->y, &p->x);
     fe_sub(&v->YminusX, &p->y, &p->x);
@@ -223,7 +223,7 @@ static inline projCached* projCached_from_p3(projCached* v, const Point* p)
     return v;
 }
 
-static inline affineCached* affineCached_from_p3(affineCached* v, const Point* p)
+static inline affine_cached* affine_cached_from_p3(affine_cached* v, const point* p)
 {
     fe_add(&v->YplusX, &p->y, &p->x);
     fe_sub(&v->YminusX, &p->y, &p->x);
@@ -237,7 +237,7 @@ static inline affineCached* affineCached_from_p3(affineCached* v, const Point* p
     return v;
 }
 
-static inline projP1xP1* projP1xP1_add(projP1xP1* v, const Point* p, const projCached* q)
+static inline proj_p1xp1* proj_p1xp1_add(proj_p1xp1* v, const point* p, const proj_cached* q)
 {
     fe YplusX;
     fe YminusX;
@@ -263,7 +263,7 @@ static inline projP1xP1* projP1xP1_add(projP1xP1* v, const Point* p, const projC
     return v;
 }
 
-static inline projP1xP1* projP1xP1_sub(projP1xP1* v, const Point* p, const projCached* q)
+static inline proj_p1xp1* proj_p1xp1_sub(proj_p1xp1* v, const point* p, const proj_cached* q)
 {
     fe YplusX;
     fe YminusX;
@@ -289,7 +289,7 @@ static inline projP1xP1* projP1xP1_sub(projP1xP1* v, const Point* p, const projC
     return v;
 }
 
-static inline projP1xP1* projP1xP1_double(projP1xP1* v, const projP2* p)
+static inline proj_p1xp1* proj_p1xp1_double(proj_p1xp1* v, const proj_p2* p)
 {
     fe A;
     fe B;
@@ -321,46 +321,46 @@ static inline projP1xP1* projP1xP1_double(projP1xP1* v, const projP2* p)
     return v;
 }
 
-static inline Point* point_add(Point* v, const Point* p, const Point* q)
+static inline point* point_add(point* v, const point* p, const point* q)
 {
-    projCached q_cached;
-    projP1xP1 result;
-    Point tmp;
+    proj_cached q_cached;
+    proj_p1xp1 result;
+    point tmp;
 
-    projCached_from_p3(&q_cached, q);
-    projP1xP1_add(&result, p, &q_cached);
+    proj_cached_from_p3(&q_cached, q);
+    proj_p1xp1_add(&result, p, &q_cached);
     point_from_p1x1(&tmp, &result);
     *v = tmp;
     return v;
 }
 
-static inline Point* point_subtract(Point* v, const Point* p, const Point* q)
+static inline point* point_subtract(point* v, const point* p, const point* q)
 {
-    projCached q_cached;
-    projP1xP1 result;
-    Point tmp;
+    proj_cached q_cached;
+    proj_p1xp1 result;
+    point tmp;
 
-    projCached_from_p3(&q_cached, q);
-    projP1xP1_sub(&result, p, &q_cached);
+    proj_cached_from_p3(&q_cached, q);
+    proj_p1xp1_sub(&result, p, &q_cached);
     point_from_p1x1(&tmp, &result);
     *v = tmp;
     return v;
 }
 
-static inline Point* point_double(Point* v, const Point* p)
+static inline point* point_double(point* v, const point* p)
 {
-    projP2 p2;
-    projP1xP1 p1;
-    Point tmp;
+    proj_p2 p2;
+    proj_p1xp1 p1;
+    point tmp;
 
-    projP2_from_p3(&p2, p);
-    projP1xP1_double(&p1, &p2);
+    proj_p2_from_p3(&p2, p);
+    proj_p1xp1_double(&p1, &p2);
     point_from_p1x1(&tmp, &p1);
     *v = tmp;
     return v;
 }
 
-static inline Point* point_negate(Point* v, const Point* p)
+static inline point* point_negate(point* v, const point* p)
 {
     fe_neg(&v->x, &p->x);
     fe_set(&v->y, &p->y);
@@ -369,7 +369,7 @@ static inline Point* point_negate(Point* v, const Point* p)
     return v;
 }
 
-static inline int point_equal(const Point* p, const Point* q)
+static inline int point_equal(const point* p, const point* q)
 {
     fe x1;
     fe x2;
@@ -380,106 +380,6 @@ static inline int point_equal(const Point* p, const Point* q)
     fe_mul(&y1, &p->y, &q->z);
     fe_mul(&y2, &q->y, &p->z);
     return fe_equal(&x1, &x2) & fe_equal(&y1, &y2);
-}
-
-static inline Point NewIdentityPoint(void)
-{
-    return point_new_identity();
-}
-
-static inline Point NewGeneratorPoint(void)
-{
-    return point_new_generator();
-}
-
-static inline uint8_t* Point_Bytes(uint8_t out[32], const Point* v)
-{
-    return point_bytes(out, v);
-}
-
-static inline Point* Point_Set(Point* v, const Point* u)
-{
-    return point_set(v, u);
-}
-
-static inline Point* Point_Add(Point* v, const Point* p, const Point* q)
-{
-    return point_add(v, p, q);
-}
-
-static inline Point* Point_Subtract(Point* v, const Point* p, const Point* q)
-{
-    return point_subtract(v, p, q);
-}
-
-static inline Point* Point_Double(Point* v, const Point* p)
-{
-    return point_double(v, p);
-}
-
-static inline Point* Point_Negate(Point* v, const Point* p)
-{
-    return point_negate(v, p);
-}
-
-static inline int Point_Equal(const Point* p, const Point* q)
-{
-    return point_equal(p, q);
-}
-
-static inline Point* Point_SetBytes(Point* v, const uint8_t* x, size_t len)
-{
-    return point_set_bytes(v, x, len) == 0 ? v : NULL;
-}
-
-static inline projP2* projP2_Zero(projP2* v)
-{
-    return projP2_zero(v);
-}
-
-static inline projCached* projCached_Zero(projCached* v)
-{
-    return projCached_zero(v);
-}
-
-static inline affineCached* affineCached_Zero(affineCached* v)
-{
-    return affineCached_zero(v);
-}
-
-static inline projP1xP1* projP1xP1_Add(projP1xP1* v, const Point* p, const projCached* q)
-{
-    return projP1xP1_add(v, p, q);
-}
-
-static inline projP1xP1* projP1xP1_Sub(projP1xP1* v, const Point* p, const projCached* q)
-{
-    return projP1xP1_sub(v, p, q);
-}
-
-static inline projP1xP1* projP1xP1_Double(projP1xP1* v, const projP2* p)
-{
-    return projP1xP1_double(v, p);
-}
-
-static inline projP2* projP2_FromP1xP1(projP2* v, const projP1xP1* p)
-{
-    return projP2_from_p1x1(v, p);
-}
-
-static inline projP2* projP2_FromP3(projP2* v, const Point* p)
-{
-    return projP2_from_p3(v, p);
-}
-
-static inline projCached* projCached_FromP3(projCached* v, const Point* p)
-{
-    return projCached_from_p3(v, p);
-}
-
-static inline affineCached* affineCached_FromP3(affineCached* v, const Point* p)
-{
-    return affineCached_from_p3(v, p);
 }
 
 #endif // !__POINT_H__

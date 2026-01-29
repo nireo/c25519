@@ -36,10 +36,10 @@ static void encode_hex(char* out, size_t out_len, const uint8_t* in, size_t in_l
     out[in_len * 2] = '\0';
 }
 
-static int check_on_curve(const Point* points, size_t n)
+static int check_on_curve(const point* points, size_t n)
 {
     for (size_t i = 0; i < n; i++) {
-        const Point* p = &points[i];
+        const point* p = &points[i];
         fe XX, YY, ZZ, ZZZZ;
         fe_square(&XX, &p->x);
         fe_square(&YY, &p->y);
@@ -72,7 +72,7 @@ static int check_on_curve(const Point* points, size_t n)
 
 static int test_generator(void)
 {
-    Point B = point_new_generator();
+    point B = point_new_generator();
 
     static const char* exp_x = "1ad5258f602d56c9b2a7259560c72c695cdcd6fd31e2a4c0fe536ecdd3366921";
     static const char* exp_y = "5866666666666666666666666666666666666666666666666666666666666666";
@@ -104,27 +104,27 @@ static int test_generator(void)
 
 static int test_add_sub_neg_on_base_point(void)
 {
-    Point B = point_new_generator();
-    Point I = point_new_identity();
-    Point check_lhs;
-    Point check_rhs;
+    point B = point_new_generator();
+    point I = point_new_identity();
+    point check_lhs;
+    point check_rhs;
 
     point_add(&check_lhs, &B, &B);
-    projP2 tmp_p2;
-    projP1xP1 tmp_p1x1;
-    projP2_from_p3(&tmp_p2, &B);
-    projP1xP1_double(&tmp_p1x1, &tmp_p2);
+    proj_p2 tmp_p2;
+    proj_p1xp1 tmp_p1x1;
+    proj_p2_from_p3(&tmp_p2, &B);
+    proj_p1xp1_double(&tmp_p1x1, &tmp_p2);
     point_from_p1x1(&check_rhs, &tmp_p1x1);
     if (point_equal(&check_lhs, &check_rhs) != 1) {
         fprintf(stderr, "B + B != [2]B\n");
         return 0;
     }
-    if (!check_on_curve((Point[]) { check_lhs, check_rhs }, 2)) {
+    if (!check_on_curve((point[]) { check_lhs, check_rhs }, 2)) {
         return 0;
     }
 
     point_subtract(&check_lhs, &B, &B);
-    Point Bneg;
+    point Bneg;
     point_negate(&Bneg, &B);
     point_add(&check_rhs, &B, &Bneg);
     if (point_equal(&check_lhs, &check_rhs) != 1) {
@@ -139,7 +139,7 @@ static int test_add_sub_neg_on_base_point(void)
         fprintf(stderr, "B + (-B) != 0\n");
         return 0;
     }
-    if (!check_on_curve((Point[]) { check_lhs, check_rhs, Bneg }, 3)) {
+    if (!check_on_curve((point[]) { check_lhs, check_rhs, Bneg }, 3)) {
         return 0;
     }
     return 1;
@@ -154,15 +154,15 @@ static int test_invalid_encodings(void)
         return 0;
     }
 
-    Point p = point_new_generator();
-    Point orig = p;
+    point p = point_new_generator();
+    point orig = p;
 
     if (point_set_bytes(&p, buf, sizeof(buf)) == 0) {
         fprintf(stderr, "expected error for invalid point\n");
         return 0;
     }
     if (point_equal(&p, &orig) != 1) {
-        fprintf(stderr, "Point modified after invalid decode\n");
+        fprintf(stderr, "point modified after invalid decode\n");
         return 0;
     }
     return check_on_curve(&p, 1);
@@ -265,8 +265,8 @@ static int test_non_canonical_points(void)
             return 0;
         }
 
-        Point p1;
-        Point p2;
+        point p1;
+        point p2;
         if (point_set_bytes(&p1, enc, sizeof(enc)) != 0) {
             fprintf(stderr, "error decoding non-canonical point %s\n", tests[i].name);
             return 0;
@@ -288,7 +288,7 @@ static int test_non_canonical_points(void)
             fprintf(stderr, "re-encoding mismatch %s\n", tests[i].name);
             return 0;
         }
-        if (!check_on_curve((Point[]) { p1, p2 }, 2)) {
+        if (!check_on_curve((point[]) { p1, p2 }, 2)) {
             return 0;
         }
     }
