@@ -84,6 +84,31 @@ static inline proj_p1xp1* proj_p1xp1_add_affine(proj_p1xp1* v, const point* p, c
     return v;
 }
 
+static inline proj_p1xp1* proj_p1xp1_sub_affine(proj_p1xp1* v, const point* p, const affine_cached* q)
+{
+    fe YplusX;
+    fe YminusX;
+    fe PP;
+    fe MM;
+    fe TT2d;
+    fe ZZ2;
+
+    fe_add(&YplusX, &p->y, &p->x);
+    fe_sub(&YminusX, &p->y, &p->x);
+
+    fe_mul(&PP, &YplusX, &q->YminusX);
+    fe_mul(&MM, &YminusX, &q->YplusX);
+    fe_mul(&TT2d, &p->t, &q->T2d);
+    fe_set(&ZZ2, &p->z);
+    fe_add(&ZZ2, &ZZ2, &ZZ2);
+
+    fe_sub(&v->X, &PP, &MM);
+    fe_add(&v->Y, &PP, &MM);
+    fe_sub(&v->Z, &ZZ2, &TT2d);
+    fe_add(&v->T, &ZZ2, &TT2d);
+    return v;
+}
+
 static inline proj_lookup_table* proj_lookup_table_from_p3(proj_lookup_table* v, const point* q)
 {
     proj_cached_from_p3(&v->points[0], q);

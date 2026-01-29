@@ -1,0 +1,5 @@
+tests/fe_tests
+tests/point_tests
+tests/scalar_tests
+tests/table_tests
+tests/scalarmult_tests
