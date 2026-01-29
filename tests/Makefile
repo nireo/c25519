@@ -1,11 +1,12 @@
 CC ?= cc
 CFLAGS ?= -std=c11 -O2 -Wall -Wextra -Wpedantic
 
-TARGETS = fe_tests point_tests scalar_tests table_tests
+TARGETS = fe_tests point_tests scalar_tests table_tests scalarmult_tests
 SRC_FE = test_fe.c
 SRC_POINT = test_point.c
 SRC_SCALAR = test_scalar.c
 SRC_TABLE = test_tables.c
+SRC_SCALARMULT = test_scalarmult.c
 
 all: $(TARGETS)
 
@@ -21,11 +22,16 @@ scalar_tests: $(SRC_SCALAR) ../scalar.h ../fiat_scalar.c
 table_tests: $(SRC_TABLE) ../fe.h ../point.h ../tables.h
 	$(CC) $(CFLAGS) -I.. $(SRC_TABLE) -o table_tests
 
+scalarmult_tests: $(SRC_SCALARMULT) ../fe.h ../point.h ../scalar.h ../tables.h ../scalarmult.h
+	$(CC) $(CFLAGS) -I.. $(SRC_SCALARMULT) -o scalarmult_tests
+
 run: all
 	./fe_tests
 	./point_tests
 	./scalar_tests
 	./table_tests
+	./scalarmult_tests
+	$(MAKE) clean
 
 clean:
 	rm -f $(TARGETS)
