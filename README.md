@@ -10,3 +10,37 @@ Files
 - `scalarmult.h`: Scalar multiplication routines and precomputed tables.
 - `tables.h`: Lookup table structures and selection helpers for scalar mult.
 - `tests/`: C test programs plus a Makefile to build/run them.
+
+## Usage
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+#include "c25519.h"
+
+int main(void)
+{
+    ed25519_public_key pk;
+    ed25519_private_key sk;
+    if (ed25519_keypair(&pk, &sk) != 0) {
+        fprintf(stderr, "keypair failed\n");
+        return 1;
+    }
+
+    const char* msg = "hello";
+    ed25519_signature sig;
+    if (ed25519_sign(sig, (const uint8_t*)msg, strlen(msg), &sk) != 0) {
+        fprintf(stderr, "sign failed\n");
+        return 1;
+    }
+
+    if (ed25519_verify(sig, (const uint8_t*)msg, strlen(msg), &pk) != 0) {
+        fprintf(stderr, "verify failed\n");
+        return 1;
+    }
+
+    printf("signature OK\n");
+    return 0;
+}
+```
