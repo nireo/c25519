@@ -1,9 +1,13 @@
-#ifndef __C25519_SHA512_H__
-#define __C25519_SHA512_H__
+#ifndef C25519_SHA512_H
+#define C25519_SHA512_H
 
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define SHA512_BLOCK_SIZE 128
 #define SHA512_DIGEST_SIZE 64
@@ -215,4 +219,8 @@ static inline void sha512_sum(const void* data, size_t len, uint8_t out[SHA512_D
     sha512_final(&ctx, out);
 }
 
-#endif /* __C25519_SHA512_H__ */
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif /* C25519_SHA512_H */

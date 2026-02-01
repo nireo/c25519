@@ -1,5 +1,5 @@
-#ifndef __C25519_H__
-#define __C25519_H__
+#ifndef C25519_H
+#define C25519_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -10,6 +10,10 @@
 #include "scalarmult.h"
 #include "seed.h"
 #include "sha512.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define C25519_PUBLIC_KEY_SIZE 32
 #define C25519_PRIVATE_KEY_SIZE 64
@@ -307,4 +311,8 @@ static inline int ed25519_verify_ph(
     return 0;
 }
 
+#ifdef __cplusplus
+} // extern "C"
 #endif
+
+#endif /* C25519_H */

@@ -1,8 +1,11 @@
-#ifndef __TABLES_H__
-#define __TABLES_H__
+#ifndef C25519_TABLES_H
+#define C25519_TABLES_H
 
 #include "point.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef struct {
     proj_cached points[8];
 } proj_lookup_table;
@@ -205,4 +208,8 @@ static inline affine_cached* naf_lookup_table8_select_into(affine_cached* dest, 
     return dest;
 }
 
+#ifdef __cplusplus
+} // extern "C"
 #endif
+
+#endif /* C25519_TABLES_H */

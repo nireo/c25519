@@ -1,9 +1,13 @@
-#ifndef __C25519_SCALAR_H__
-#define __C25519_SCALAR_H__
+#ifndef C25519_SCALAR_H
+#define C25519_SCALAR_H
 
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* The fiat-crypto implementation for the Ed25519 scalar field. */
 #include "fiat_scalar.c"
@@ -283,4 +287,8 @@ static inline int scalar_signed_radix16(int8_t out[64], const scalar* s)
     return 0;
 }
 
-#endif /* __C25519_SCALAR_H__ */
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif /* C25519_SCALAR_H */

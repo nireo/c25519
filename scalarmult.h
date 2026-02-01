@@ -1,8 +1,12 @@
-#ifndef __SCALARMULT_H__
-#define __SCALARMULT_H__
+#ifndef C25519_SCALARMULT_H
+#define C25519_SCALARMULT_H
 
 #include "scalar.h"
 #include "tables.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* basepoint_table is a set of 32 affine_lookup_table entries for 256^i * B. */
 static inline const affine_lookup_table* basepoint_table(void)
@@ -174,4 +178,8 @@ static inline point* point_vartime_double_scalar_base_mult(point* v, const scala
     return v;
 }
 
-#endif /* __SCALARMULT_H__ */
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif /* C25519_SCALARMULT_H */

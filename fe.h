@@ -1,8 +1,12 @@
-#ifndef __C25519_FE_H__
-#define __C25519_FE_H__
+#ifndef C25519_FE_H
+#define C25519_FE_H
 
 #include <stddef.h>
 #include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define M52 0xFFFFFFFFFFFFFULL // 52 ones
 #define M48 0x0FFFFFFFFFFFFULL // 48 ones
@@ -556,4 +560,8 @@ static inline int fe_sqrt_ratio(fe* r, const fe* u, const fe* v)
     return correct | flipped;
 }
 
+#ifdef __cplusplus
+} // extern "C"
 #endif
+
+#endif /* C25519_FE_H */

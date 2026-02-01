@@ -1,10 +1,14 @@
-#ifndef __POINT_H__
-#define __POINT_H__
+#ifndef C25519_POINT_H
+#define C25519_POINT_H
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include "fe.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct proj_p1xp1 {
     fe X;
@@ -382,4 +386,8 @@ static inline int point_equal(const point* p, const point* q)
     return fe_equal(&x1, &x2) & fe_equal(&y1, &y2);
 }
 
-#endif // !__POINT_H__
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif /* C25519_POINT_H */
