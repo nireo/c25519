@@ -44,3 +44,14 @@ int main(void)
     return 0;
 }
 ```
+
+## Benchmarks
+
+```
+seed generation: 13us (75539 per second)
+key generation: 12us (80628 per second)
+message signing (short message): 13us (75883 per second)
+message verifying (short message): 40us (24901 per second)
+scalar addition: 0.01us (183003002 per second)
+key exchange: 38us (26130 per second)
+```
