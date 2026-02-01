@@ -1,5 +1,6 @@
 CC ?= cc
 CFLAGS ?= -std=c11 -O2 -Wall -Wextra -Wpedantic
+BENCH_CFLAGS ?= $(CFLAGS)
 
 TARGETS = fe_tests point_tests scalar_tests table_tests scalarmult_tests sha512_tests ed25519_tests
 BENCH = benchmark
@@ -35,7 +36,7 @@ ed25519_tests: $(SRC_ED25519) ../c25519.h ../sha512.h ../seed.h ../point.h ../sc
 	$(CC) $(CFLAGS) -I.. $(SRC_ED25519) -o ed25519_tests
 
 benchmark: benchmark.c ../c25519.h ../sha512.h ../seed.h ../point.h ../scalar.h ../scalarmult.h ../tables.h ../fe.h ../fiat_scalar.c
-	$(CC) $(CFLAGS) -I.. benchmark.c -o $(BENCH)
+	$(CC) $(BENCH_CFLAGS) -I.. benchmark.c -o $(BENCH)
 	./$(BENCH); status=$$?; rm -f $(BENCH); exit $$status
 
 run: all
