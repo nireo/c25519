@@ -22,10 +22,7 @@ static inline uint64_t sha512_ror64(uint64_t v, unsigned int n)
 
 static inline uint64_t sha512_load64_be(const uint8_t* in)
 {
-    return ((uint64_t)in[0] << 56) | ((uint64_t)in[1] << 48) |
-           ((uint64_t)in[2] << 40) | ((uint64_t)in[3] << 32) |
-           ((uint64_t)in[4] << 24) | ((uint64_t)in[5] << 16) |
-           ((uint64_t)in[6] << 8) | ((uint64_t)in[7]);
+    return ((uint64_t)in[0] << 56) | ((uint64_t)in[1] << 48) | ((uint64_t)in[2] << 40) | ((uint64_t)in[3] << 32) | ((uint64_t)in[4] << 24) | ((uint64_t)in[5] << 16) | ((uint64_t)in[6] << 8) | ((uint64_t)in[7]);
 }
 
 static inline void sha512_store64_be(uint8_t out[8], uint64_t v)

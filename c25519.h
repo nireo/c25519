@@ -2,8 +2,8 @@
 #define __C25519_H__
 
 #include <stddef.h>
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "point.h"
 #include "scalar.h"
@@ -256,7 +256,8 @@ static inline int ed25519_verify(const ed25519_signature sig, const uint8_t* msg
     return 0;
 }
 
-static inline int ed25519_verify_ph(const ed25519_signature sig, const uint8_t* msg, size_t msg_len, const ed25519_public_key* pk, const uint8_t* ctx_data, size_t ctx_len)
+static inline int ed25519_verify_ph(
+    const ed25519_signature sig, const uint8_t* msg, size_t msg_len, const ed25519_public_key* pk, const uint8_t* ctx_data, size_t ctx_len)
 {
     if (msg_len != ED25519_SHA512_SIZE) {
         return -1;
