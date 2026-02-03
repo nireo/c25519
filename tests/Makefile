@@ -20,7 +20,7 @@ fe_tests: $(SRC_FE) ../fe.h
 point_tests: $(SRC_POINT) ../fe.h ../point.h
 	$(CC) $(CFLAGS) -I.. $(SRC_POINT) -o point_tests
 
-scalar_tests: $(SRC_SCALAR) ../scalar.h ../fiat_scalar.c
+scalar_tests: $(SRC_SCALAR) ../scalar.h ../fiat_scalar.h
 	$(CC) $(CFLAGS) -I.. $(SRC_SCALAR) -o scalar_tests
 
 table_tests: $(SRC_TABLE) ../fe.h ../point.h ../tables.h
@@ -35,7 +35,7 @@ sha512_tests: $(SRC_SHA512) ../sha512.h
 ed25519_tests: $(SRC_ED25519) ../c25519.h ../sha512.h ../seed.h ../point.h ../scalar.h ../scalarmult.h ../tables.h ../fe.h
 	$(CC) $(CFLAGS) -I.. $(SRC_ED25519) -o ed25519_tests
 
-benchmark: benchmark.c ../c25519.h ../sha512.h ../seed.h ../point.h ../scalar.h ../scalarmult.h ../tables.h ../fe.h ../fiat_scalar.c
+benchmark: benchmark.c ../c25519.h ../sha512.h ../seed.h ../point.h ../scalar.h ../scalarmult.h ../tables.h ../fe.h ../fiat_scalar.h
 	$(CC) $(BENCH_CFLAGS) -I.. benchmark.c -o $(BENCH)
 	./$(BENCH); status=$$?; rm -f $(BENCH); exit $$status
 

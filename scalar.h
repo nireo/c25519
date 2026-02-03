@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 /* The fiat-crypto implementation for the Ed25519 scalar field. */
-#include "fiat_scalar.c"
+#include "fiat_scalar.h"
 
 typedef struct scalar {
     fiat_25519_scalar_montgomery_domain_field_element s;
