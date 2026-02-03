@@ -155,6 +155,20 @@ static inline int ed25519_sign(ed25519_signature sig, const uint8_t* msg, size_t
     return 0;
 }
 
+static inline int ed25519_sign_from_seed(ed25519_signature sig, const uint8_t* msg, size_t msg_len, const ed25519_seed seed)
+{
+    ed25519_public_key pk;
+    if (ed25519_public_key_from_seed(&pk, seed) != 0) {
+        return -1;
+    }
+
+    ed25519_private_key sk;
+    memcpy(sk, seed, ED25519_SEED_SIZE);
+    memcpy(sk + ED25519_SEED_SIZE, pk, ED25519_PUBLIC_KEY_SIZE);
+    const ed25519_private_key* skp = (const ed25519_private_key*)(const void*)&sk;
+    return ed25519_sign(sig, msg, msg_len, skp);
+}
+
 static inline int ed25519_sign_ph(ed25519_signature sig, const uint8_t* msg, size_t msg_len, const ed25519_private_key* sk, const uint8_t* ctx_data, size_t ctx_len)
 {
     if (msg_len != ED25519_SHA512_SIZE) {
@@ -214,6 +228,21 @@ static inline int ed25519_sign_ph(ed25519_signature sig, const uint8_t* msg, siz
     memcpy(sig, r_bytes, 32);
     scalar_bytes(sig + 32, &S);
     return 0;
+}
+
+static inline int ed25519_sign_ph_from_seed(
+    ed25519_signature sig, const uint8_t* msg, size_t msg_len, const ed25519_seed seed, const uint8_t* ctx_data, size_t ctx_len)
+{
+    ed25519_public_key pk;
+    if (ed25519_public_key_from_seed(&pk, seed) != 0) {
+        return -1;
+    }
+
+    ed25519_private_key sk;
+    memcpy(sk, seed, ED25519_SEED_SIZE);
+    memcpy(sk + ED25519_SEED_SIZE, pk, ED25519_PUBLIC_KEY_SIZE);
+    const ed25519_private_key* skp = (const ed25519_private_key*)(const void*)&sk;
+    return ed25519_sign_ph(sig, msg, msg_len, skp, ctx_data, ctx_len);
 }
 
 static inline int ed25519_verify(const ed25519_signature sig, const uint8_t* msg, size_t msg_len, const ed25519_public_key* pk)

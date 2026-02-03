@@ -1,6 +1,6 @@
 # c25519
 
-A portable implementation of Ed25519 in C somewhat based on the Go standard library implementation.
+A portable implementation of Ed25519 in C, somewhat based on the Go standard library implementation.
 
 Files
 - `fe.h`: Field element operations for Curve25519 (5x51-bit limbs).
@@ -54,6 +54,21 @@ The fiat-crypto scalar code uses a tiny inline-asm value barrier on GCC/Clang. I
 ```
 
 This makes the value barrier a no-op while keeping the same scalar arithmetic implementation.
+
+## Seeded APIs and Linux entropy
+
+You can provide a 32-byte seed directly to avoid relying on the built-in RNG:
+
+- `ed25519_public_key_from_seed`
+- `ed25519_keypair_from_seed`
+- `ed25519_sign_from_seed`
+- `ed25519_sign_ph_from_seed`
+
+On Linux, `ed25519_create_seed` prefers `getrandom(2)` and falls back to `/dev/urandom`. To force the fallback path, define:
+
+```
+-DC25519_NO_GETRANDOM
+```
 
 ## Benchmarks
 
