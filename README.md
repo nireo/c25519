@@ -45,6 +45,16 @@ int main(void)
 }
 ```
 
+## Disabling fiat-crypto inline assembly
+
+The fiat-crypto scalar code uses a tiny inline-asm value barrier on GCC/Clang. If you need to disable all inline assembly (e.g., for certain toolchains, sanitizers, or restricted build environments), define:
+
+```
+-DFIAT_25519_SCALAR_NO_ASM
+```
+
+This makes the value barrier a no-op while keeping the same scalar arithmetic implementation.
+
 ## Benchmarks
 
 ```
