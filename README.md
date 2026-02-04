@@ -11,6 +11,25 @@ Files
 - `tables.h`: Lookup table structures and selection helpers for scalar mult.
 - `tests/`: C test programs plus a Makefile to build/run them.
 
+## API overview
+
+All public functions are defined in `c25519.h`. Most functions return `0` on success and `-1` on error.
+
+- Types:
+  - `ed25519_public_key` (32 bytes)
+  - `ed25519_private_key` (64 bytes, seed || public key)
+  - `ed25519_seed` (32 bytes)
+  - `ed25519_signature` (64 bytes, R || S)
+- Key generation:
+  - `ed25519_keypair` creates a keypair using the built-in RNG.
+  - `ed25519_keypair_from_seed` derives a keypair from a 32-byte seed.
+- Signing:
+  - `ed25519_sign` signs a message using a private key.
+  - `ed25519_sign_from_seed` signs directly from a 32-byte seed.
+  - `ed25519_sign_ph` and `ed25519_sign_ph_from_seed` sign a 64-byte prehash.
+- Verification:
+  - `ed25519_verify` and `ed25519_verify_ph` verify signatures with a public key.
+
 ## Usage
 
 ```c
@@ -43,6 +62,12 @@ int main(void)
     printf("signature OK\n");
     return 0;
 }
+```
+
+## Building tests
+
+```
+make -C tests run
 ```
 
 ## Disabling fiat-crypto inline assembly
