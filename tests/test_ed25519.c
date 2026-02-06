@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../c25519.h"
+#include "ed25519_wycheproof_vectors.h"
 
 static const uint8_t scalar_order_l[32] = {
     0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
@@ -214,6 +215,58 @@ static int test_vector(const char* name,
     return 1;
 }
 
+static int test_wycheproof_vectors(void)
+{
+    size_t mismatches = 0;
+
+    for (size_t i = 0; i < wycheproof_case_count; i++) {
+        const wycheproof_case* tc = &wycheproof_cases[i];
+
+        ed25519_public_key pk;
+        ed25519_signature sig;
+        if (!hex_to_bytes(pk, sizeof(pk), tc->pk_hex)) {
+            fprintf(stderr, "wycheproof tcId=%u: bad public key hex\n", tc->tc_id);
+            return 0;
+        }
+        if (!hex_to_bytes(sig, sizeof(sig), tc->sig_hex)) {
+            fprintf(stderr, "wycheproof tcId=%u: bad signature hex\n", tc->tc_id);
+            return 0;
+        }
+
+        size_t msg_len = strlen(tc->msg_hex) / 2;
+        uint8_t msg_buf[2048];
+        if (msg_len > sizeof(msg_buf)) {
+            fprintf(stderr, "wycheproof tcId=%u: message too large\n", tc->tc_id);
+            return 0;
+        }
+        if (msg_len > 0 && !hex_to_bytes(msg_buf, msg_len, tc->msg_hex)) {
+            fprintf(stderr, "wycheproof tcId=%u: bad message hex\n", tc->tc_id);
+            return 0;
+        }
+
+        const ed25519_public_key* pkp = (const ed25519_public_key*)(const void*)&pk;
+        int is_valid = ed25519_verify(sig, msg_buf, msg_len, pkp) == 0 ? 1 : 0;
+        if (is_valid != tc->expected_valid) {
+            fprintf(stderr, "wycheproof tcId=%u mismatch: got %s, expected %s\n",
+                tc->tc_id,
+                is_valid ? "valid" : "invalid",
+                tc->expected_valid ? "valid" : "invalid");
+            mismatches++;
+        }
+    }
+
+    if (mismatches != 0) {
+        fprintf(stderr, "wycheproof mismatch count: %zu/%zu\n", mismatches, wycheproof_case_count);
+        return 0;
+    }
+
+    fprintf(stdout, "wycheproof vectors: exercised %zu cases, skipped %zu/%zu unsupported signature-length cases\n",
+        wycheproof_case_count,
+        wycheproof_skipped_count,
+        wycheproof_total_count);
+    return 1;
+}
+
 int main(void)
 {
     struct {
@@ -300,7 +353,14 @@ int main(void)
             "dc2a4459e7369633a52b1bf277839a00201009a3efbf3ecb69bea2186c26b589"
             "09351fc9ac90b3ecfdfbc7c66431e0303dca179c138ac17ad9bef1177331a704",
             0
-        }
+        },
+    };
+
+    struct {
+        const char* name;
+        int (*fn)(void);
+    } extra_tests[] = {
+        { "wycheproof_verify", test_wycheproof_vectors },
     };
 
     int failures = 0;
@@ -310,6 +370,14 @@ int main(void)
             failures++;
         } else {
             fprintf(stdout, "[OK]   %s\n", tests[i].name);
+        }
+    }
+    for (size_t i = 0; i < sizeof(extra_tests) / sizeof(extra_tests[0]); i++) {
+        if (!extra_tests[i].fn()) {
+            fprintf(stderr, "[FAIL] %s\n", extra_tests[i].name);
+            failures++;
+        } else {
+            fprintf(stdout, "[OK]   %s\n", extra_tests[i].name);
         }
     }
 

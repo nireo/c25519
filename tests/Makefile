@@ -32,7 +32,7 @@ scalarmult_tests: $(SRC_SCALARMULT) ../fe.h ../point.h ../scalar.h ../tables.h .
 sha512_tests: $(SRC_SHA512) ../sha512.h
 	$(CC) $(CFLAGS) -I.. $(SRC_SHA512) -o sha512_tests
 
-ed25519_tests: $(SRC_ED25519) ../c25519.h ../sha512.h ../seed.h ../point.h ../scalar.h ../scalarmult.h ../tables.h ../fe.h
+ed25519_tests: $(SRC_ED25519) ed25519_wycheproof_vectors.h ../c25519.h ../sha512.h ../seed.h ../point.h ../scalar.h ../scalarmult.h ../tables.h ../fe.h
 	$(CC) $(CFLAGS) -I.. $(SRC_ED25519) -o ed25519_tests
 
 benchmark: benchmark.c ../c25519.h ../sha512.h ../seed.h ../point.h ../scalar.h ../scalarmult.h ../tables.h ../fe.h ../fiat_scalar.h
