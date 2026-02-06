@@ -4,6 +4,13 @@
 
 #include "../c25519.h"
 
+static const uint8_t scalar_order_l[32] = {
+    0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58,
+    0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10
+};
+
 static int hex_val(char c)
 {
     if (c >= '0' && c <= '9') {
@@ -32,6 +39,95 @@ static int hex_to_bytes(uint8_t* out, size_t out_len, const char* hex)
         }
         out[i] = (uint8_t)((hi << 4) | lo);
     }
+    return 1;
+}
+
+static int verify_with_mode(
+    const ed25519_signature sig, const uint8_t* msg, size_t msg_len, const ed25519_public_key* pk, int use_ph)
+{
+    if (use_ph) {
+        return ed25519_verify_ph(sig, msg, msg_len, pk, NULL, 0);
+    }
+    return ed25519_verify(sig, msg, msg_len, pk);
+}
+
+static int expect_verify_fail(const char* name,
+    const char* case_name,
+    const ed25519_signature sig,
+    const uint8_t* msg,
+    size_t msg_len,
+    const ed25519_public_key* pk,
+    int use_ph)
+{
+    if (verify_with_mode(sig, msg, msg_len, pk, use_ph) == 0) {
+        fprintf(stderr, "%s: verify unexpectedly accepted mutation (%s)\n", name, case_name);
+        return 0;
+    }
+    return 1;
+}
+
+static int test_mutated_invalid_cases(
+    const char* name, const ed25519_signature sig, const uint8_t* msg, size_t msg_len, const ed25519_public_key* pk, int use_ph)
+{
+    ed25519_signature mutated_sig;
+
+    memcpy(mutated_sig, sig, sizeof(mutated_sig));
+    mutated_sig[0] ^= 0x01;
+    if (!expect_verify_fail(name, "flip_R_bit", mutated_sig, msg, msg_len, pk, use_ph)) {
+        return 0;
+    }
+
+    memcpy(mutated_sig, sig, sizeof(mutated_sig));
+    mutated_sig[40] ^= 0x01;
+    if (!expect_verify_fail(name, "flip_S_bit", mutated_sig, msg, msg_len, pk, use_ph)) {
+        return 0;
+    }
+
+    memcpy(mutated_sig, sig, sizeof(mutated_sig));
+    mutated_sig[63] |= 0xe0;
+    if (!expect_verify_fail(name, "set_S_high_bits", mutated_sig, msg, msg_len, pk, use_ph)) {
+        return 0;
+    }
+
+    memcpy(mutated_sig, sig, sizeof(mutated_sig));
+    memcpy(mutated_sig + 32, scalar_order_l, sizeof(scalar_order_l));
+    if (!expect_verify_fail(name, "set_S_to_l", mutated_sig, msg, msg_len, pk, use_ph)) {
+        return 0;
+    }
+
+    memcpy(mutated_sig, sig, sizeof(mutated_sig));
+    memcpy(mutated_sig + 32, scalar_order_l, sizeof(scalar_order_l));
+    mutated_sig[32] += 1;
+    if (!expect_verify_fail(name, "set_S_to_l_plus_1", mutated_sig, msg, msg_len, pk, use_ph)) {
+        return 0;
+    }
+
+    uint8_t mutated_msg[2048];
+    if (msg_len > sizeof(mutated_msg)) {
+        fprintf(stderr, "%s: message too large for mutation buffer\n", name);
+        return 0;
+    }
+
+    size_t mutated_msg_len = msg_len;
+    if (msg_len == 0) {
+        mutated_msg[0] = 0x01;
+        mutated_msg_len = 1;
+    } else {
+        memcpy(mutated_msg, msg, msg_len);
+        mutated_msg[0] ^= 0x01;
+    }
+    if (!expect_verify_fail(name, "mutate_message", sig, mutated_msg, mutated_msg_len, pk, use_ph)) {
+        return 0;
+    }
+
+    ed25519_public_key mutated_pk;
+    memcpy(mutated_pk, *pk, sizeof(mutated_pk));
+    mutated_pk[0] ^= 0x80;
+    const ed25519_public_key* mutated_pkp = (const ed25519_public_key*)(const void*)&mutated_pk;
+    if (!expect_verify_fail(name, "mutate_public_key", sig, msg, msg_len, mutated_pkp, use_ph)) {
+        return 0;
+    }
+
     return 1;
 }
 
@@ -97,19 +193,22 @@ static int test_vector(const char* name,
             fprintf(stderr, "%s: verify_ph failed\n", name);
             return 0;
         }
-        return 1;
+    } else {
+        if (ed25519_sign(sig, msg_buf, msg_len, skp) != 0) {
+            fprintf(stderr, "%s: sign failed\n", name);
+            return 0;
+        }
+        if (memcmp(sig, sig_expected, sizeof(sig_expected)) != 0) {
+            fprintf(stderr, "%s: signature mismatch\n", name);
+            return 0;
+        }
+        if (ed25519_verify(sig_expected, msg_buf, msg_len, pkp) != 0) {
+            fprintf(stderr, "%s: verify failed\n", name);
+            return 0;
+        }
     }
 
-    if (ed25519_sign(sig, msg_buf, msg_len, skp) != 0) {
-        fprintf(stderr, "%s: sign failed\n", name);
-        return 0;
-    }
-    if (memcmp(sig, sig_expected, sizeof(sig_expected)) != 0) {
-        fprintf(stderr, "%s: signature mismatch\n", name);
-        return 0;
-    }
-    if (ed25519_verify(sig_expected, msg_buf, msg_len, pkp) != 0) {
-        fprintf(stderr, "%s: verify failed\n", name);
+    if (!test_mutated_invalid_cases(name, sig_expected, msg_buf, msg_len, pkp, use_ph)) {
         return 0;
     }
     return 1;
