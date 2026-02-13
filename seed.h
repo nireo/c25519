@@ -14,36 +14,35 @@
 extern "C" {
 #endif
 
-static inline int ed25519_create_seed(unsigned char* seed)
-{
-    size_t offset = 0;
+static inline int ed25519_create_seed(unsigned char *seed) {
+  size_t offset = 0;
 #if defined(__linux__) && !defined(C25519_NO_GETRANDOM)
-    while (offset < 32) {
-        ssize_t read_len = getrandom(seed + offset, 32U - offset, 0);
-        if (read_len > 0) {
-            offset += (size_t)read_len;
-            continue;
-        }
-        if (read_len == -1 && errno == EINTR) {
-            continue;
-        }
-        if (read_len == -1 && (errno == ENOSYS || errno == EPERM)) {
-            break;
-        }
-        return -1;
+  while (offset < 32) {
+    ssize_t read_len = getrandom(seed + offset, 32U - offset, 0);
+    if (read_len > 0) {
+      offset += (size_t)read_len;
+      continue;
     }
-    if (offset == 32) {
-        return 0;
+    if (read_len == -1 && errno == EINTR) {
+      continue;
     }
+    if (read_len == -1 && (errno == ENOSYS || errno == EPERM)) {
+      break;
+    }
+    return -1;
+  }
+  if (offset == 32) {
+    return 0;
+  }
 #endif
-    FILE* f = fopen("/dev/urandom", "rb");
-    if (!f) {
-        return -1;
-    }
-    size_t read_len = fread(seed + offset, 1, 32 - offset, f);
-    fclose(f);
+  FILE *f = fopen("/dev/urandom", "rb");
+  if (!f) {
+    return -1;
+  }
+  size_t read_len = fread(seed + offset, 1, 32 - offset, f);
+  fclose(f);
 
-    return read_len == 32 - offset ? 0 : -1;
+  return read_len == 32 - offset ? 0 : -1;
 }
 
 #ifdef __cplusplus
