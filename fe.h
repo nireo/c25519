@@ -1,6 +1,7 @@
 #ifndef C25519_FE_H
 #define C25519_FE_H
 
+#include <cstdint>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,8 +14,9 @@ extern "C" {
 
 #define MASK51 ((uint64_t)((1ULL << 51) - 1))
 
-// this is a 51-bit representation the benefit of the 5x51 is lazy reduction, such that we can do
-// several operations without reducing and then reduce the whole thing. numbers are little-endian
+// this is a 51-bit representation the benefit of the 5x51 is lazy reduction,
+// such that we can do several operations without reducing and then reduce the
+// whole thing. numbers are little-endian
 typedef struct {
     uint64_t l0;
     uint64_t l1;
@@ -48,15 +50,15 @@ static inline fe* fe_zero(fe* e)
     return e;
 }
 
-// fe_load64_le takes in 8 bytes and converts those into a internal field element representation.
-// the 'in' is expected to be little-endian.
+// fe_load64_le takes in 8 bytes and converts those into a internal field
+// element representation. the 'in' is expected to be little-endian.
 static inline uint64_t fe_load64_le(const uint8_t* in)
 {
     return ((uint64_t)in[0]) | ((uint64_t)in[1] << 8) | ((uint64_t)in[2] << 16) | ((uint64_t)in[3] << 24) | ((uint64_t)in[4] << 32) | ((uint64_t)in[5] << 40) | ((uint64_t)in[6] << 48) | ((uint64_t)in[7] << 56);
 }
 
-// fe_store64_le stores a internal fe as 8 bytes into out in little-endian encoding. Note that the length
-// of out should be at least 8.
+// fe_store64_le stores a internal fe as 8 bytes into out in little-endian
+// encoding. Note that the length of out should be at least 8.
 static inline void fe_store64_le(uint8_t* out, uint64_t v)
 {
     out[0] = (uint8_t)(v);
@@ -109,8 +111,8 @@ static inline uint64_t fe_shift_right_51(fe_uint128 a)
     return (a.hi << (64 - 51)) | (a.lo >> 51);
 }
 
-// fe_carry_propagate handles basic addition by carrying over the part that is over 51-bits
-// into the next limb.
+// fe_carry_propagate handles basic addition by carrying over the part that is
+// over 51-bits into the next limb.
 static inline fe* fe_carry_propagate(fe* v)
 {
     uint64_t l0 = v->l0;
@@ -122,9 +124,9 @@ static inline fe* fe_carry_propagate(fe* v)
     return v;
 }
 
-// fe_reduce it ensures that a number is fully contained within the field. Since 2^255 is
-// congruent 19 (mod 2^255 - 19). any values that wraps around the top is multiplied by 19
-// and added back to the bottom.
+// fe_reduce it ensures that a number is fully contained within the field. Since
+// 2^255 is congruent 19 (mod 2^255 - 19). any values that wraps around the top
+// is multiplied by 19 and added back to the bottom.
 static inline fe* fe_reduce(fe* v)
 {
     uint64_t c;
@@ -179,10 +181,7 @@ static inline fe* fe_sub(fe* v, const fe* a, const fe* b)
     return fe_carry_propagate(v);
 }
 
-static inline fe* fe_neg(fe* v, const fe* a)
-{
-    return fe_sub(v, &FE_ZERO, a);
-}
+static inline fe* fe_neg(fe* v, const fe* a) { return fe_sub(v, &FE_ZERO, a); }
 
 static inline void fe_mul_port(fe* v, const fe* a, const fe* b)
 {
@@ -293,7 +292,8 @@ static inline fe* fe_square(fe* v, const fe* x)
     return v;
 }
 
-static inline void fe_mul51(uint64_t a, uint32_t b, uint64_t* lo, uint64_t* hi)
+static inline void fe_mul51(uint64_t a, uint32_t b, uint64_t* lo,
+    uint64_t* hi)
 {
     __uint128_t m = (__uint128_t)a * b;
     *lo = (uint64_t)m & MASK51;
