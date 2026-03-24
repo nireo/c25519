@@ -15,20 +15,26 @@ Files
 
 All public functions are defined in `c25519.h`. Most functions return `0` on success and `-1` on error.
 
-- Types:
-  - `ed25519_public_key` (32 bytes)
-  - `ed25519_private_key` (64 bytes, seed || public key)
-  - `ed25519_seed` (32 bytes)
-  - `ed25519_signature` (64 bytes, R || S)
-- Key generation:
-  - `ed25519_keypair` creates a keypair using the built-in RNG.
-  - `ed25519_keypair_from_seed` derives a keypair from a 32-byte seed.
-- Signing:
-  - `ed25519_sign` signs a message using a private key.
-  - `ed25519_sign_from_seed` signs directly from a 32-byte seed.
-  - `ed25519_sign_ph` and `ed25519_sign_ph_from_seed` sign a 64-byte prehash.
-- Verification:
-  - `ed25519_verify` and `ed25519_verify_ph` verify signatures with a public key.
+### Types
+
+```
+ed25519_public_key (32 bytes)
+ed25519_private_key (64 bytes, seed || public key)
+ed25519_seed (32 bytes)
+ed25519_signature (64 bytes, R || S)
+```
+
+### Functions
+
+```
+ed25519_keypai creates a keypair using the built-in RNG.
+ed25519_keypair_from_seed derives a keypair from a 32-byte seed.
+ed25519_sign signs a message using a private key.
+ed25519_sign_from_seed signs directly from a 32-byte seed.
+ed25519_sign_ph and ed25519_sign_ph_from_seed sign a 64-byte prehash.
+ed25519_verify and ed25519_verify_ph verify signatures with a public key.
+```
+
 
 ## Usage
 
@@ -64,21 +70,19 @@ int main(void)
 }
 ```
 
-## Building tests
+## Tests 
 
 ```
 make -C tests run
 ```
 
-## Disabling fiat-crypto inline assembly
+## Disabling inline assembly
 
-The fiat-crypto scalar code uses a tiny inline-asm value barrier on GCC/Clang. If you need to disable all inline assembly (e.g., for certain toolchains, sanitizers, or restricted build environments), define:
+The fiat-crypto scalar code uses inline assembly. This can be disabled via:
 
 ```
 -DFIAT_25519_SCALAR_NO_ASM
 ```
-
-This makes the value barrier a no-op while keeping the same scalar arithmetic implementation.
 
 ## Seeded APIs and Linux entropy
 
@@ -89,19 +93,17 @@ You can provide a 32-byte seed directly to avoid relying on the built-in RNG:
 - `ed25519_sign_from_seed`
 - `ed25519_sign_ph_from_seed`
 
-On Linux, `ed25519_create_seed` prefers `getrandom(2)` and falls back to `/dev/urandom`. To force the fallback path, define:
-
-```
--DC25519_NO_GETRANDOM
-```
+On Linux, `ed25519_create_seed` creates random bytes from a cryptographically secure random number generator which is implemented using `getrandom()` and on macOS it's implemented using `getentropy()`.
 
 ## Benchmarks
 
+Benchmarks on an Apple M5 MacBook Pro:
+
 ```
-seed generation: 13us (75539 per second)
-key generation: 12us (80628 per second)
-message signing (short message): 13us (75883 per second)
-message verifying (short message): 40us (24901 per second)
-scalar addition: 0.01us (183003002 per second)
-key exchange: 38us (26130 per second)
+seed generation: 653ns (1531958 per second)
+key generation: 6us (175851 per second)
+message signing (short message): 6us (161560 per second)
+message verifying (short message): 16us (61972 per second)
+scalar addition: 1.98ns (505022192 per second)
+key exchange: 15us (66104 per second)
 ```
