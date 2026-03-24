@@ -63,6 +63,7 @@ static inline int ed25519_dom2(sha512_ctx* ctx, uint8_t phflag,
     if (ctx_len > 0) {
         sha512_update(ctx, ctx_data, ctx_len);
     }
+
     return 0;
 }
 

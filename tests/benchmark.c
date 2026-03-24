@@ -7,6 +7,14 @@
 
 #define BENCH_MIN_NS 100000000ULL
 
+#if defined(_MSC_VER)
+#define BENCH_NOINLINE __declspec(noinline)
+#elif defined(__GNUC__) || defined(__clang__)
+#define BENCH_NOINLINE __attribute__((noinline))
+#else
+#define BENCH_NOINLINE
+#endif
+
 static volatile uint64_t bench_sink = 0;
 static int bench_failed = 0;
 
@@ -23,7 +31,7 @@ static uint64_t now_ns(void)
 
 typedef void (*bench_fn)(void* ctx);
 
-static double run_bench(bench_fn fn, void* ctx)
+static BENCH_NOINLINE double run_bench(bench_fn fn, void* ctx)
 {
     size_t iters = 1;
     uint64_t elapsed_ns = 0;
@@ -52,18 +60,34 @@ static double run_bench(bench_fn fn, void* ctx)
 static void print_result(const char* name, double us_per_op)
 {
     double per_sec = us_per_op > 0.0 ? 1000000.0 / us_per_op : 0.0;
-    if (us_per_op < 1.0) {
-        printf("%s: %.2fus (%.0f per second)\n", name, us_per_op, per_sec);
+    if (us_per_op >= 1.0) {
+        printf("%s: %.0fus (%.0f per second)\n", name, us_per_op, per_sec);
         return;
     }
-    printf("%s: %.0fus (%.0f per second)\n", name, us_per_op, per_sec);
+
+    double scaled = us_per_op * 1000.0;
+    const char* unit = "ns";
+    if (scaled < 1.0) {
+        scaled *= 1000.0;
+        unit = "ps";
+    }
+
+    if (scaled >= 100.0) {
+        printf("%s: %.0f%s (%.0f per second)\n", name, scaled, unit, per_sec);
+        return;
+    }
+    if (scaled >= 10.0) {
+        printf("%s: %.1f%s (%.0f per second)\n", name, scaled, unit, per_sec);
+        return;
+    }
+    printf("%s: %.2f%s (%.0f per second)\n", name, scaled, unit, per_sec);
 }
 
 struct seed_ctx {
     ed25519_seed seed;
 };
 
-static void bench_seed(void* vctx)
+static BENCH_NOINLINE void bench_seed(void* vctx)
 {
     struct seed_ctx* ctx = vctx;
     if (ed25519_create_seed(ctx->seed) != 0) {
@@ -79,7 +103,7 @@ struct keygen_ctx {
     ed25519_private_key sk;
 };
 
-static void bench_keygen(void* vctx)
+static BENCH_NOINLINE void bench_keygen(void* vctx)
 {
     struct keygen_ctx* ctx = vctx;
     ctx->seed[0]++;
@@ -96,7 +120,7 @@ struct sign_ctx {
     ed25519_signature sig;
 };
 
-static void bench_sign(void* vctx)
+static BENCH_NOINLINE void bench_sign(void* vctx)
 {
     struct sign_ctx* ctx = vctx;
     const ed25519_private_key* skp = (const ed25519_private_key*)(const void*)&ctx->sk;
@@ -113,7 +137,7 @@ struct verify_ctx {
     ed25519_signature sig;
 };
 
-static void bench_verify(void* vctx)
+static BENCH_NOINLINE void bench_verify(void* vctx)
 {
     struct verify_ctx* ctx = vctx;
     const ed25519_public_key* pkp = (const ed25519_public_key*)(const void*)&ctx->pk;
@@ -131,7 +155,7 @@ struct scalar_add_ctx {
     scalar out;
 };
 
-static void bench_scalar_add(void* vctx)
+static BENCH_NOINLINE void bench_scalar_add(void* vctx)
 {
     struct scalar_add_ctx* ctx = vctx;
     scalar_add(&ctx->out, &ctx->a, &ctx->b);
@@ -151,7 +175,7 @@ static int scalar_from_seed_uniform(scalar* out, const ed25519_seed seed)
     return scalar_set_uniform_bytes(out, digest, sizeof(digest));
 }
 
-static void bench_key_exchange(void* vctx)
+static BENCH_NOINLINE void bench_key_exchange(void* vctx)
 {
     struct keyex_ctx* ctx = vctx;
     point shared;

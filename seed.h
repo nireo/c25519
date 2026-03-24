@@ -8,6 +8,9 @@
 #include <errno.h>
 #include <sys/random.h>
 #include <sys/types.h>
+#elif defined(__APPLE__) && !defined(C25519_NO_GETENTROPY)
+#include <errno.h>
+#include <sys/random.h>
 #endif
 
 #ifdef __cplusplus
@@ -31,6 +34,27 @@ static inline int ed25519_create_seed(unsigned char* seed)
             break;
         }
         return -1;
+    }
+    if (offset == 32) {
+        return 0;
+    }
+#elif defined(__APPLE__) && !defined(C25519_NO_GETENTROPY)
+    while (offset < 32) {
+        size_t chunk = 32U - offset;
+        if (chunk > 256U) {
+            chunk = 256U;
+        }
+        if (getentropy(seed + offset, chunk) == 0) {
+            offset += chunk;
+            continue;
+        }
+        if (errno == EINTR) {
+            continue;
+        }
+        if (errno != ENOSYS) {
+            return -1;
+        }
+        break;
     }
     if (offset == 32) {
         return 0;

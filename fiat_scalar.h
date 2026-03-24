@@ -32,7 +32,6 @@
 /*                            if x1 & (2^256-1) < 2^255 then x1 & (2^256-1) else
  * (x1 & (2^256-1)) - 2^256 */
 
-#include <cstdint>
 #include <stdint.h>
 typedef unsigned char fiat_25519_scalar_uint1;
 typedef signed char fiat_25519_scalar_int1;

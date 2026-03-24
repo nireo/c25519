@@ -1,7 +1,6 @@
 #ifndef C25519_FE_H
 #define C25519_FE_H
 
-#include <cstdint>
 #include <stddef.h>
 #include <stdint.h>
 
