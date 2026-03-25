@@ -9,7 +9,7 @@ Files
 - `scalar.h`: Scalar wrapper helpers (encoding/decoding, arithmetic, NAF/radix16 helpers).
 - `scalarmult.h`: Scalar multiplication routines and precomputed tables.
 - `tables.h`: Lookup table structures and selection helpers for scalar mult.
-- `tests/`: C test programs plus a Makefile to build/run them.
+- `tests/`: C test programs used by the top-level make targets.
 
 ## API overview
 
@@ -73,8 +73,18 @@ int main(void)
 ## Tests 
 
 ```
-make -C tests run
+make test
 ```
+
+## Single-header generation
+
+To generate an amalgamated single-header version of the library:
+
+```
+make single-header
+```
+
+That writes `c25519_single.h` in the repo root. You can override the output path with `make SINGLE_HEADER=/tmp/c25519_single.h single-header`, or use `python3 scripts/make_single_header.py -` to write to stdout.
 
 ## Disabling inline assembly
 
@@ -96,6 +106,12 @@ You can provide a 32-byte seed directly to avoid relying on the built-in RNG:
 On Linux, `ed25519_create_seed` creates random bytes from a cryptographically secure random number generator which is implemented using `getrandom()` and on macOS it's implemented using `getentropy()`.
 
 ## Benchmarks
+
+Run them with:
+
+```
+make benchmark
+```
 
 Benchmarks on an Apple M5 MacBook Pro:
 
