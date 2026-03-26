@@ -3,3 +3,6 @@ tests/point_tests
 tests/scalar_tests
 tests/table_tests
 tests/scalarmult_tests
+c25519_single.h
+.DS_Store
+scripts/__pycache__
