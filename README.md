@@ -116,11 +116,11 @@ make benchmark
 Benchmarks on an Apple M5 MacBook Pro:
 
 ```
-seed generation: 650ns (1537565 per second)
-key generation: 6us (178557 per second)
-sha512 (1024 bytes): 1us (713367 per second)
-message signing (short message): 6us (162598 per second)
-message verifying (short message): 16us (62587 per second)
-scalar addition: 2.06ns (485171082 per second)
-key exchange: 15us (65194 per second)
+seed generation: 654ns (1528340 per second)
+key generation: 6us (174786 per second)
+sha512 (1024 bytes): 1us (823384 per second)
+message signing (short message): 6us (160418 per second)
+message verifying (short message): 17us (60045 per second)
+scalar addition: 2.11ns (473962780 per second)
+key exchange: 16us (63679 per second)
 ```

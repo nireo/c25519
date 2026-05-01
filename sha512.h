@@ -118,33 +118,108 @@ static inline void sha512_transform(sha512_ctx* ctx,
     uint64_t g = ctx->state[6];
     uint64_t h = ctx->state[7];
 
-    for (size_t i = 0; i < 16; i++) {
-        uint64_t t0 = h + sha512_sigma1(e) + sha512_ch(e, f, g) + sha512_k[i] + w[i];
-        uint64_t t1 = sha512_sigma0(a) + sha512_maj(a, b, c);
-        h = g;
-        g = f;
-        f = e;
-        e = d + t0;
-        d = c;
-        c = b;
-        b = a;
-        a = t0 + t1;
-    }
+#define SHA512_ROUND(i, wi) \
+    do { \
+        uint64_t t0 = h + sha512_sigma1(e) + sha512_ch(e, f, g) \
+            + sha512_k[(i)] + (wi); \
+        uint64_t t1 = sha512_sigma0(a) + sha512_maj(a, b, c); \
+        h = g; \
+        g = f; \
+        f = e; \
+        e = d + t0; \
+        d = c; \
+        c = b; \
+        b = a; \
+        a = t0 + t1; \
+    } while (0)
+#define SHA512_SCHED(i) \
+    (w[(i) & 15U] += sha512_gamma1(w[((i) + 14U) & 15U]) \
+            + w[((i) + 9U) & 15U] \
+            + sha512_gamma0(w[((i) + 1U) & 15U]))
 
-    for (size_t i = 16; i < 80; i++) {
-        size_t j = i & 15U;
-        w[j] += sha512_gamma1(w[(j + 14U) & 15U]) + w[(j + 9U) & 15U] + sha512_gamma0(w[(j + 1U) & 15U]);
-        uint64_t t0 = h + sha512_sigma1(e) + sha512_ch(e, f, g) + sha512_k[i] + w[j];
-        uint64_t t1 = sha512_sigma0(a) + sha512_maj(a, b, c);
-        h = g;
-        g = f;
-        f = e;
-        e = d + t0;
-        d = c;
-        c = b;
-        b = a;
-        a = t0 + t1;
-    }
+    SHA512_ROUND(0, w[0]);
+    SHA512_ROUND(1, w[1]);
+    SHA512_ROUND(2, w[2]);
+    SHA512_ROUND(3, w[3]);
+    SHA512_ROUND(4, w[4]);
+    SHA512_ROUND(5, w[5]);
+    SHA512_ROUND(6, w[6]);
+    SHA512_ROUND(7, w[7]);
+    SHA512_ROUND(8, w[8]);
+    SHA512_ROUND(9, w[9]);
+    SHA512_ROUND(10, w[10]);
+    SHA512_ROUND(11, w[11]);
+    SHA512_ROUND(12, w[12]);
+    SHA512_ROUND(13, w[13]);
+    SHA512_ROUND(14, w[14]);
+    SHA512_ROUND(15, w[15]);
+    SHA512_ROUND(16, SHA512_SCHED(16));
+    SHA512_ROUND(17, SHA512_SCHED(17));
+    SHA512_ROUND(18, SHA512_SCHED(18));
+    SHA512_ROUND(19, SHA512_SCHED(19));
+    SHA512_ROUND(20, SHA512_SCHED(20));
+    SHA512_ROUND(21, SHA512_SCHED(21));
+    SHA512_ROUND(22, SHA512_SCHED(22));
+    SHA512_ROUND(23, SHA512_SCHED(23));
+    SHA512_ROUND(24, SHA512_SCHED(24));
+    SHA512_ROUND(25, SHA512_SCHED(25));
+    SHA512_ROUND(26, SHA512_SCHED(26));
+    SHA512_ROUND(27, SHA512_SCHED(27));
+    SHA512_ROUND(28, SHA512_SCHED(28));
+    SHA512_ROUND(29, SHA512_SCHED(29));
+    SHA512_ROUND(30, SHA512_SCHED(30));
+    SHA512_ROUND(31, SHA512_SCHED(31));
+    SHA512_ROUND(32, SHA512_SCHED(32));
+    SHA512_ROUND(33, SHA512_SCHED(33));
+    SHA512_ROUND(34, SHA512_SCHED(34));
+    SHA512_ROUND(35, SHA512_SCHED(35));
+    SHA512_ROUND(36, SHA512_SCHED(36));
+    SHA512_ROUND(37, SHA512_SCHED(37));
+    SHA512_ROUND(38, SHA512_SCHED(38));
+    SHA512_ROUND(39, SHA512_SCHED(39));
+    SHA512_ROUND(40, SHA512_SCHED(40));
+    SHA512_ROUND(41, SHA512_SCHED(41));
+    SHA512_ROUND(42, SHA512_SCHED(42));
+    SHA512_ROUND(43, SHA512_SCHED(43));
+    SHA512_ROUND(44, SHA512_SCHED(44));
+    SHA512_ROUND(45, SHA512_SCHED(45));
+    SHA512_ROUND(46, SHA512_SCHED(46));
+    SHA512_ROUND(47, SHA512_SCHED(47));
+    SHA512_ROUND(48, SHA512_SCHED(48));
+    SHA512_ROUND(49, SHA512_SCHED(49));
+    SHA512_ROUND(50, SHA512_SCHED(50));
+    SHA512_ROUND(51, SHA512_SCHED(51));
+    SHA512_ROUND(52, SHA512_SCHED(52));
+    SHA512_ROUND(53, SHA512_SCHED(53));
+    SHA512_ROUND(54, SHA512_SCHED(54));
+    SHA512_ROUND(55, SHA512_SCHED(55));
+    SHA512_ROUND(56, SHA512_SCHED(56));
+    SHA512_ROUND(57, SHA512_SCHED(57));
+    SHA512_ROUND(58, SHA512_SCHED(58));
+    SHA512_ROUND(59, SHA512_SCHED(59));
+    SHA512_ROUND(60, SHA512_SCHED(60));
+    SHA512_ROUND(61, SHA512_SCHED(61));
+    SHA512_ROUND(62, SHA512_SCHED(62));
+    SHA512_ROUND(63, SHA512_SCHED(63));
+    SHA512_ROUND(64, SHA512_SCHED(64));
+    SHA512_ROUND(65, SHA512_SCHED(65));
+    SHA512_ROUND(66, SHA512_SCHED(66));
+    SHA512_ROUND(67, SHA512_SCHED(67));
+    SHA512_ROUND(68, SHA512_SCHED(68));
+    SHA512_ROUND(69, SHA512_SCHED(69));
+    SHA512_ROUND(70, SHA512_SCHED(70));
+    SHA512_ROUND(71, SHA512_SCHED(71));
+    SHA512_ROUND(72, SHA512_SCHED(72));
+    SHA512_ROUND(73, SHA512_SCHED(73));
+    SHA512_ROUND(74, SHA512_SCHED(74));
+    SHA512_ROUND(75, SHA512_SCHED(75));
+    SHA512_ROUND(76, SHA512_SCHED(76));
+    SHA512_ROUND(77, SHA512_SCHED(77));
+    SHA512_ROUND(78, SHA512_SCHED(78));
+    SHA512_ROUND(79, SHA512_SCHED(79));
+
+#undef SHA512_SCHED
+#undef SHA512_ROUND
 
     ctx->state[0] += a;
     ctx->state[1] += b;
