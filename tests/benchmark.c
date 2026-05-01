@@ -120,6 +120,18 @@ struct sign_ctx {
     ed25519_signature sig;
 };
 
+struct sha512_bench_ctx {
+    uint8_t msg[1024];
+    uint8_t digest[SHA512_DIGEST_SIZE];
+};
+
+static BENCH_NOINLINE void bench_sha512(void* vctx)
+{
+    struct sha512_bench_ctx* ctx = vctx;
+    sha512_sum(ctx->msg, sizeof(ctx->msg), ctx->digest);
+    bench_sink ^= ctx->digest[0];
+}
+
 static BENCH_NOINLINE void bench_sign(void* vctx)
 {
     struct sign_ctx* ctx = vctx;
@@ -204,6 +216,13 @@ int main(void)
         return 1;
     }
     print_result("key generation", keygen_us);
+
+    struct sha512_bench_ctx sha512_ctx = { 0 };
+    for (size_t i = 0; i < sizeof(sha512_ctx.msg); i++) {
+        sha512_ctx.msg[i] = (uint8_t)i;
+    }
+    double sha512_us = run_bench(bench_sha512, &sha512_ctx);
+    print_result("sha512 (1024 bytes)", sha512_us);
 
     ed25519_seed sign_seed;
     if (ed25519_create_seed(sign_seed) != 0) {

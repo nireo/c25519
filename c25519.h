@@ -56,6 +56,7 @@ static inline int ed25519_dom2(sha512_ctx* ctx, uint8_t phflag,
     }
 
     sha512_update(ctx, dom2_prefix, sizeof(dom2_prefix) - 1);
+
     uint8_t tag[2];
     tag[0] = phflag;
     tag[1] = (uint8_t)ctx_len;
