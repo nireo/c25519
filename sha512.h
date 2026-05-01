@@ -104,12 +104,9 @@ static const uint64_t sha512_k[80] = {
 static inline void sha512_transform(sha512_ctx* ctx,
     const uint8_t block[SHA512_BLOCK_SIZE])
 {
-    uint64_t w[80];
+    uint64_t w[16];
     for (size_t i = 0; i < 16; i++) {
         w[i] = sha512_load64_be(block + (i * 8));
-    }
-    for (size_t i = 16; i < 80; i++) {
-        w[i] = sha512_gamma1(w[i - 2]) + w[i - 7] + sha512_gamma0(w[i - 15]) + w[i - 16];
     }
 
     uint64_t a = ctx->state[0];
@@ -121,8 +118,23 @@ static inline void sha512_transform(sha512_ctx* ctx,
     uint64_t g = ctx->state[6];
     uint64_t h = ctx->state[7];
 
-    for (size_t i = 0; i < 80; i++) {
+    for (size_t i = 0; i < 16; i++) {
         uint64_t t0 = h + sha512_sigma1(e) + sha512_ch(e, f, g) + sha512_k[i] + w[i];
+        uint64_t t1 = sha512_sigma0(a) + sha512_maj(a, b, c);
+        h = g;
+        g = f;
+        f = e;
+        e = d + t0;
+        d = c;
+        c = b;
+        b = a;
+        a = t0 + t1;
+    }
+
+    for (size_t i = 16; i < 80; i++) {
+        size_t j = i & 15U;
+        w[j] += sha512_gamma1(w[(j + 14U) & 15U]) + w[(j + 9U) & 15U] + sha512_gamma0(w[(j + 1U) & 15U]);
+        uint64_t t0 = h + sha512_sigma1(e) + sha512_ch(e, f, g) + sha512_k[i] + w[j];
         uint64_t t1 = sha512_sigma0(a) + sha512_maj(a, b, c);
         h = g;
         g = f;
